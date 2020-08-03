@@ -1,13 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define PORT        8181		/* port number as an integer */
-#define IP_ADDRESS "9.137.62.23"	/* IP address as a string */
+/* YOU WILL HAVE TO CHANGE THESE TWO LINES  TO MATCH YOUR CONFIG */
+#define PORT        8181		/* Port number as an integer - web server default is 80 */
+#define IP_ADDRESS "192.168.0.8"	/* IP Address as a string */
+
+char *command = "GET /index.html HTTP/1.0 \r\n\r\n" ;
+/* Note: spaces are delimiters and VERY important */
 
 #define BUFSIZE 8196
 
@@ -31,14 +36,15 @@ static struct sockaddr_in serv_addr;
 	serv_addr.sin_addr.s_addr = inet_addr(IP_ADDRESS);
 	serv_addr.sin_port = htons(PORT);
 
-	if(connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) <0)
+	/* Connect tot he socket offered by the web server */
+	if(connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) <0) 
 		pexit("connect() failed");
 
-	/* now the sockfd can be used to communicate to the server */
-	write(sockfd, "GET /index.html \r\n", 18);
-	/* note second space is a delimiter and important */
+	/* Now the sockfd can be used to communicate to the server the GET request */
+	printf("Send bytes=%d %s\n",strlen(command), command);
+	write(sockfd, command, strlen(command));
 
-	/* this displays the raw HTML file as received by the browser */
+	/* This displays the raw HTML file (if index.html) as received by the browser */
 	while( (i=read(sockfd,buffer,BUFSIZE)) > 0)
 		write(1,buffer,i);
 }
